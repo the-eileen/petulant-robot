@@ -37,6 +37,8 @@ static int listen_port;
 
 #define TASKBUFSIZ	409600	// Size of task_t::buf
 #define FILENAMESIZ	256	// Size of task_t::filename
+#define MD5_LENGTH 128 //thanks MD5
+#define BUFFERSIZE 4096
 
 typedef enum tasktype {		// Which type of connection is this?
 	TASK_TRACKER,		// => Tracker connection
@@ -66,6 +68,7 @@ typedef struct task {
 
 	char filename[FILENAMESIZ];	// Requested filename
 	char disk_filename[FILENAMESIZ]; // Local filename (TASK_DOWNLOAD)
+	char checksum[MD5_LENGTH];
 
 	peer_t *peer_list;	// List of peers that have 'filename'
 				// (TASK_DOWNLOAD).  The task_download
@@ -73,6 +76,37 @@ typedef struct task {
 				// task_pop_peer() removes peers from it, one
 				// at a time, if a peer misbehaves.
 } task_t;
+
+//create_checksum
+//Take in a filename and a checksum array,
+//then return the number of characters read
+//puts the checksum into the second argument
+
+int create_checksum(char* filename, char* checksum)
+{
+char buffer[BUFFERSIZE];
+md5_state_t state;
+md5_init(&state);
+//initiates the state
+int bytes_read = 0;
+int fd;
+if((fd = open(filename, O_RDONLY))){
+while(1){
+	if(read(fd, buffer, BUFFERSIZE) == 0)
+	{
+		buffer[BUFFERSIZE-1] = '\0'; //set the last character to the null byte.
+		bytes_read = md5_finish_text(&state, checksum, 1);
+		buffer[bytes_read] = '\0';
+		close(fd);
+		return bytes_read;
+	}
+	md5_append(&state, (md5_byte_t*)buffer, bytes_read);
+}
+}
+else
+	return 0;
+
+}
 
 
 // task_new(type)
@@ -461,7 +495,7 @@ task_t *start_download(task_t *tracker_task, const char *filename)
 	peer_t *p;
 	size_t messagepos;
 	assert(tracker_task->type == TASK_TRACKER);
-
+  
 	message("* Finding peers for '%s'\n", filename);
 
 	osp2p_writef(tracker_task->peer_fd, "WANT %s\n", filename);
@@ -576,10 +610,24 @@ static void task_download(task_t *t, task_t *tracker_task)
 		}
 	}
 
+//checksum
+char checksum[MD5_LENGTH];
+int bytes_read = 0;	
 	// Empty files are usually a symptom of some error.
 	if (t->total_written > 0) {
 		message("* Downloaded '%s' was %lu bytes long\n",
 			t->disk_filename, (unsigned long) t->total_written);
+	bytes_read = create_checksum(t->disk_filename, checksum);
+	if(bytes_read == 0) //nothing read, meaning things have gone wrong
+		{
+		error("* Checksum returned nothing for %s. \n", t->disk_filename);
+		task_free(t);
+		return;
+		}
+	if(strcmp(tracker_task->checksum, checksum) != 0)
+	{//checksums do match
+		message("* Checksums match for %s. \n", t->disk_filename);
+	}
 		// Inform the tracker that we now have the file,
 		// and can serve it to others!  (But ignore tracker errors.)
 		if (strcmp(t->filename, t->disk_filename) == 0) {
