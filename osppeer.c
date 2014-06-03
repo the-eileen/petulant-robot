@@ -22,10 +22,7 @@
 #include <limits.h>
 #include "md5.h"
 #include "osp2p.h"
-<<<<<<< HEAD
-=======
 
->>>>>>> be80b3b6cff40b601a3100ba23b27a2af738d7e2
 int evil_mode;			// nonzero iff this peer should behave badly
 
 static struct in_addr listen_addr;	// Define listening endpoint
@@ -38,11 +35,7 @@ static int listen_port;
  * a bounded buffer that simplifies reading from and writing to peers.
  */
 
-<<<<<<< HEAD
 #define TASKBUFSIZ	409600	// Size of task_t::buf
-=======
-#define TASKBUFSIZ	4096	// Size of task_t::buf
->>>>>>> be80b3b6cff40b601a3100ba23b27a2af738d7e2
 #define FILENAMESIZ	256	// Size of task_t::filename
 
 typedef enum tasktype {		// Which type of connection is this?
@@ -483,11 +476,7 @@ task_t *start_download(task_t *tracker_task, const char *filename)
 		error("* Error while allocating task");
 		goto exit;
 	}
-<<<<<<< HEAD
 	strncpy(t->filename, filename, FILENAMESIZ); //use strncpy to prevent a buffer overflow attack
-=======
-	strcpy(t->filename, filename);
->>>>>>> be80b3b6cff40b601a3100ba23b27a2af738d7e2
 
 	// add peers
 	s1 = tracker_task->buf;
@@ -544,11 +533,7 @@ static void task_download(task_t *t, task_t *tracker_task)
 	// at all.
 	for (i = 0; i < 50; i++) {
 		if (i == 0)
-<<<<<<< HEAD
 			strncpy(t->disk_filename, t->filename, FILENAMESIZ);
-=======
-			strcpy(t->disk_filename, t->filename);
->>>>>>> be80b3b6cff40b601a3100ba23b27a2af738d7e2
 		else
 			sprintf(t->disk_filename, "%s~%d~", t->filename, i);
 		t->disk_fd = open(t->disk_filename,
@@ -775,14 +760,6 @@ int main(int argc, char *argv[])
 
 	// First, download files named on command line.
 	for (; argc > 1; argc--, argv++)
-<<<<<<< HEAD
-		if ((t = start_download(tracker_task, argv[1])))
-			task_download(t, tracker_task);
-
-	// Then accept connections from other peers and upload files to them!
-	while ((t = task_listen(listen_task)))
-		task_upload(t);
-=======
 		if ((t = start_download(tracker_task, argv[1]))){
 			p = fork();
 			//yay lab1 forking...
@@ -816,7 +793,6 @@ int main(int argc, char *argv[])
 				//for parent in this one either D:
 			}
 	}
->>>>>>> be80b3b6cff40b601a3100ba23b27a2af738d7e2
 
 	return 0;
 }
