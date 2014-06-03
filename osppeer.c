@@ -515,7 +515,12 @@ static void task_download(task_t *t, task_t *tracker_task)
 	} else if (t->peer_list->addr.s_addr == listen_addr.s_addr
 		   && t->peer_list->port == listen_port)
 		goto try_again;
-
+	if (strstr(t->filename, "/") != NULL)
+	{
+		error("* No slashes allowed! ");
+		task_free(t);
+		return;
+	}
 	// Connect to the peer and write the GET command
 	message("* Connecting to %s:%d to download '%s'\n",
 		inet_ntoa(t->peer_list->addr), t->peer_list->port,
@@ -757,6 +762,7 @@ int main(int argc, char *argv[])
 	tracker_task = start_tracker(tracker_addr, tracker_port);
 	listen_task = start_listen();
 	register_files(tracker_task, myalias);
+	pid_t p;
 
 	// First, download files named on command line.
 	for (; argc > 1; argc--, argv++)
