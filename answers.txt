@@ -35,11 +35,19 @@ continuously writing and instead forces it to always only write the block size
 # EXERCISE 2B: What other robustness problems did you fix?  (~1-3 sentences
 #    each)
 
+There are several things I've done to make the p2p more robust.  For one, it
+doesn't allow the file name to have a slash in it, which stops anyone from
+accessing anything not directly in the directory.  In addition, I increased the
+buffer size to allow for more peers to stave off any DoS attacks.  I also
+implemented the MD5 checksum, which helps prevent corrupted files.
+
+
 # EXERCISE 3: Describe the attacks you implemented for "evil mode".  Why
 #    are they attacks?  (~3-10 sentences each)
-I implemented a buffer overflow attack. This is an attack since it does not give the peer the correct information. It would also corrupt the user's stack.
+	I implemented a buffer overflow attack. This is an attack since it does not
+give the peer the correct information. It would also corrupt the user's stack.
 
 # Extra credit problems
-#Extra credit problem: none
+Extra credit problem: MD5 File Integrity
 
 # Add any other information you'd like us to know below this line.
