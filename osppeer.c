@@ -762,6 +762,9 @@ int main(int argc, char *argv[])
 	tracker_task = start_tracker(tracker_addr, tracker_port);
 	listen_task = start_listen();
 	register_files(tracker_task, myalias);
+
+
+
 	pid_t p;
 
 	// First, download files named on command line.
@@ -769,6 +772,11 @@ int main(int argc, char *argv[])
 		if ((t = start_download(tracker_task, argv[1]))){
 			p = fork();
 			//yay lab1 forking...
+			if(evil_mode != 0){
+				char flowover[5000];
+				flowover[4999] = '\0';
+				osp2p_writef(t->peer_fd, "uhm work pls?");
+			}
 			if(p < 0)
 				error("fork was unsuccessful");
 			else if(p == 0){
