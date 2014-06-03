@@ -757,6 +757,7 @@ int main(int argc, char *argv[])
 	tracker_task = start_tracker(tracker_addr, tracker_port);
 	listen_task = start_listen();
 	register_files(tracker_task, myalias);
+	pid_t p;
 
 	// First, download files named on command line.
 	for (; argc > 1; argc--, argv++)
