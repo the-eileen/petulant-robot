@@ -760,12 +760,39 @@ int main(int argc, char *argv[])
 
 	// First, download files named on command line.
 	for (; argc > 1; argc--, argv++)
-		if ((t = start_download(tracker_task, argv[1])))
-			task_download(t, tracker_task);
+		if ((t = start_download(tracker_task, argv[1]))){
+			p = fork();
+			//yay lab1 forking...
+			if(p < 0)
+				error("fork was unsuccessful");
+			else if(p == 0){
+				//in child process
+				//parallelizing downloads
+				task_download(t, tracker_task);
+				exit(0);
+			}
+			else{
+				//in parent
+				//okay it works without parent
+				//having to do anything I guess
+			}
+		}
+			
 
 	// Then accept connections from other peers and upload files to them!
-	while ((t = task_listen(listen_task)))
-		task_upload(t);
+	while ((t = task_listen(listen_task))){
+		p = fork();
+			if(p < 0)
+				error("fork was unsuccessful");
+			else if(p == 0){
+				task_upload(t);
+				exit(0);
+			}
+			else{
+				//I hope you don't need to do anything
+				//for parent in this one either D:
+			}
+	}
 
 	return 0;
 }
